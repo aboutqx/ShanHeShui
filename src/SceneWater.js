@@ -1,6 +1,6 @@
 var planeGeo = new THREE.PlaneBufferGeometry( 5000, 5000, 100, 100 );
 var material = new THREE.MeshBasicMaterial({
-	color:'lightblue',
+	color:'blue',
 	opacity: 0.75,
     transparent: true
 })

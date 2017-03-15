@@ -77,13 +77,21 @@ class Scene {
 
     _setControls(){
         switch( Config.controls ){
-            case 'default' :
+            case 'orbit' :
             default :
                 var OrbitControls=require('./libs/Controls/OrbitControls')(THREE);
                 this.controls = new OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.rotateSpeed = 0.2;
                 break;
-            case 'dolly'  :
+            case 'range'  :
+                var RangeControls=require('./libs/Controls/RangeControls')(THREE);
+                this.controls = new RangeControls(this, { 
+                    rx: .2,
+                    xMax: Number.POSITIVE_INFINITY,
+                    xMin: Number.NEGATIVE_INFINITY,
+                    yMax: 9,
+                    yMin: 2
+                },400);
                 break;
         }
     }

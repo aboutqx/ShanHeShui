@@ -1,5 +1,5 @@
 var THREE,container;
-THREE.RotateControls=function(pano,domElement,radius){
+THREE.PanoControls=function(pano,domElement,radius){
   var camera=pano.camera,renderer=pano.renderer;
 
   this.domElement = ( domElement !== undefined ) ? domElement : document;

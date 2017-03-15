@@ -1,6 +1,6 @@
 let Config={
 	post:true,
 	debug:true,
-	controls:'default'
+	controls:'range'
 }
 export default Config;

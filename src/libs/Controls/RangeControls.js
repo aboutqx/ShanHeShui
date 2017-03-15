@@ -1,8 +1,9 @@
-var THREE,container;
-THREE.RotateControls=function(pano,domElement,radius){
+module.exports = function( THREE ) {
+function RangeControls(pano,option,radius){
   var camera=pano.camera,renderer=pano.renderer;
 
-  this.domElement = ( domElement !== undefined ) ? domElement : document;
+  this.domElement = renderer.domElement ;
+  this.option=option;
 
   var isUserInteracting = false,ellapsedTime, ellapsedFactor,
     onPointerDownPointerX = 0, onPointerDownPointerY = 0,
@@ -13,45 +14,46 @@ THREE.RotateControls=function(pano,domElement,radius){
     ;
 
   camera.target=camera.target||new THREE.Vector3(0,0,0);
+  
 
   this.update=function(){
 
     var cd = new Date();
     var ctime = cd.getTime();
 
-    ellapsedTime = ( ctime - time );
-    ellapsedFactor = ellapsedTime / 16;
+    ellapsedTime = 1000/60;
+    ellapsedFactor = ellapsedTime / 16.6;
 
-    var s = .15 * ellapsedFactor;
-    lon += ( nLon - lon ) * s;
-    lat += ( nLat - lat ) * s;
-    fov += ( nFov - fov ) * s;
+    var s = .15//.15 * ellapsedFactor;
+    if(Math.abs(nLon - lon) < 0.0001) {
+      lon = nLon;
+    } else lon += ( nLon - lon ) * s;
+    if(Math.abs(nLat - lat) < 0.0001) {
+      lat = nLat;
+    } else lat += ( nLat - lat ) * s;
+    if(Math.abs(nLon - fov) < 0.0001) {
+      fov = nFov;
+    } else fov += ( nFov - fov ) * s;
 
     camera.fov = fov;
 
     camera.updateProjectionMatrix();
+    
+    lat = Math.max(this.option.yMin, Math.min( this.option.yMax, lat ) );
+    lon = Math.max(this.option.xMin,Math.min(this.option.xMax,lon))
 
-    lat = Math.max( - 85, Math.min( 85, lat ) );
-    phi = THREE.Math.degToRad( 90 - lat );
-    theta = THREE.Math.degToRad( lon );
+    phi = THREE.Math.degToRad( 90 - lat );//y
+    theta = THREE.Math.degToRad( lon );//x
 
-    camera.target.x = radius * Math.sin( phi ) * Math.cos( theta );
-    camera.target.y = radius * Math.cos( phi );
-    camera.target.z = radius * Math.sin( phi ) * Math.sin( theta );
+    camera.position.x = radius * Math.sin( phi ) * Math.cos( theta );
+    camera.position.y = radius * Math.cos( phi );
+    camera.position.z = radius * Math.sin( phi ) * Math.sin( theta );
+    camera.lookAt(camera.target);
 
-    camera.lookAt( camera.target );
     time = ctime;
     
     pano.nLon=nLon;
   };
-  function onWindowResized() {
-    /*
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    */
-  }
 
   function onDocumentMouseDown( event ) {
 
@@ -70,27 +72,14 @@ THREE.RotateControls=function(pano,domElement,radius){
   function onDocumentMouseMove( event ) {
 
     event.preventDefault();
-    var f=fov/500;
+    var f=option.rx||fov/1000;
+    if ( isUserInteracting ) {
+      var dx = ( onPointerDownPointerX - event.clientX ) * f;
+      var dy = ( event.clientY - onPointerDownPointerY ) * f;
+      nLon = dx + onPointerDownLon; // reversed dragging direction (thanks @mrdoob!)
+      nLat = dy + onPointerDownLat;
 
-    if( navigator.pointer && navigator.pointer.isLocked ) {
-      nLon = event.webkitMovementX * f;
-      nLat += event.webkitMovementY * f;
-    } else if ( document.mozPointerLockElement == container ){
-      if( Math.abs( event.mozMovementX ) < 100 || Math.abs( event.mozMovementY ) < 100 ) {
-        nLon = event.mozMovementX * f;
-        nLat -= event.mozMovementY * f;
-      }
-    } else {
-      if ( isUserInteracting ) {
-        var dx = ( onPointerDownPointerX - event.clientX ) * f;
-        var dy = ( event.clientY - onPointerDownPointerY ) * f;
-        nLon = dx + onPointerDownLon; // reversed dragging direction (thanks @mrdoob!)
-        nLat = dy + onPointerDownLat;
-
-
-      }
     }
-
 
   }
 
@@ -201,10 +190,11 @@ THREE.RotateControls=function(pano,domElement,radius){
   this.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
   this.domElement.addEventListener( 'DOMMouseScroll', onDocumentMouseWheel, false);
 
-  window.addEventListener( 'resize', onWindowResized, false );
 
   this.domElement.addEventListener( 'touchstart', onTouchStart, false );
   this.domElement.addEventListener( 'touchmove', onTouchMove, false );
   this.domElement.addEventListener( 'touchend', onTouchEnd, false );
   this.domElement.addEventListener( 'touchcancel', onTouchEnd, false );
+};
+return RangeControls;
 };
